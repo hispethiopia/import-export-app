@@ -33,8 +33,8 @@ import {
     IdScheme,
     defaultIdSchemeOption,
 } from '../../components/Inputs/index.js'
-import { jsDateToISO8601 } from '../../utils/helper.js'
 import { onExport, validate } from './form-helper.js'
+import { DateEthiopian } from '../../components/DatePicker/utils/DateEthiopian.js'
 
 const { Form } = ReactFinalForm
 
@@ -45,12 +45,9 @@ export const PAGE_DESCRIPTION = i18n.t(
 )
 const PAGE_ICON = <EventIcon />
 
-const today = new Date()
-const threeMonthsBeforeToday = new Date(
-    today.getFullYear(),
-    today.getMonth() - 3,
-    today.getDate()
-)
+let todayEthiopian = new DateEthiopian()
+let threeMonthsAgo = new DateEthiopian(todayEthiopian.getMonth() > 2 ? todayEthiopian.getFullYear() : todayEthiopian.getFullYear() - 1, todayEthiopian.getMonth() > 2 ? todayEthiopian.getMonth() - 3 : (12 - 3 + todayEthiopian.getMonth()), todayEthiopian.getDate())
+
 
 const initialValues = {
     selectedOrgUnits: [],
@@ -58,8 +55,8 @@ const initialValues = {
     programStage: undefined,
     format: defaultFormatOption,
     compression: defaultCompressionOption,
-    startDate: jsDateToISO8601(threeMonthsBeforeToday),
-    endDate: jsDateToISO8601(today),
+    startDate: todayEthiopian.toISOString(),
+    endDate: threeMonthsAgo.toISOString(),
     includeDeleted: false,
     dataElementIdScheme: defaultDataElementIdSchemeOption,
     orgUnitIdScheme: defaultOrgUnitIdSchemeOption,
