@@ -34,6 +34,7 @@ import {
 } from '../../components/Inputs/index.js'
 import { onExport, validate } from './form-helper.js'
 import { DateEthiopian } from '../../components/DatePicker/utils/DateEthiopian.js'
+import { formatJsonOptions } from '../../components/Inputs/Format.js'
 
 const { Form } = ReactFinalForm
 
@@ -45,7 +46,7 @@ export const PAGE_DESCRIPTION = i18n.t(
 const PAGE_ICON = <DataIcon />
 
 let todayEthiopian = new DateEthiopian()
-let threeMonthsAgo = new DateEthiopian(todayEthiopian.getMonth() > 2 ? todayEthiopian.getFullYear() : todayEthiopian.getFullYear() - 1, todayEthiopian.getMonth() > 2 ? todayEthiopian.getMonth() - 3 : (12 - 3 + todayEthiopian.getMonth()), todayEthiopian.getDate())
+let threeMonthsAgo = todayEthiopian.addMonthIgnoringPuagme(-3);
 
 const initialValues = {
     selectedOrgUnits: [],
@@ -94,17 +95,7 @@ const DataExport = () => {
                                 <StartDate />
                                 <EndDate />
                             </Dates>
-                            <Format availableFormats={formatAdxXMLOptions} />
-                            <Compression />
                         </BasicOptions>
-                        <MoreOptions>
-                            <IncludeDeleted />
-                            <SchemeContainer>
-                                <DataElementIdScheme />
-                                <OrgUnitIdScheme />
-                                <IdScheme />
-                            </SchemeContainer>
-                        </MoreOptions>
                         <ValidationSummary />
                         <ExportButton
                             label={i18n.t('Export data')}

@@ -10,6 +10,10 @@ const formatOptions = [
     { value: 'xml', label: i18n.t('XML') },
 ]
 
+const formatJsonOptions = [
+    { value: 'json', label: i18n.t('JSON') }
+]
+
 const formatNoCsvOptions = formatOptions.filter((f) => f.value != 'csv')
 const formatNoXmlOptions = formatOptions.filter((f) => f.value != 'xml')
 const formatNoXmlNoCsvOptions = formatOptions.filter(
@@ -65,5 +69,6 @@ export {
     formatAdxXMLOptions,
     formatAdxPdfOptions,
     formatJsonpOptions,
+    formatJsonOptions,
     defaultFormatOption,
 }

@@ -28,7 +28,7 @@ export class DateEthiopian {
      * @param {number} day a numeric date value
      */
     constructor(year, month, day) {
-        
+
         if (arguments.length === 0) {
             return DateEthiopian.fromIso(new Date())
         } else if (arguments.length === 1) {
@@ -52,6 +52,35 @@ export class DateEthiopian {
 
     }
 
+
+    /**
+     * Gets the number of days in the month provided.
+     * @param {integer} year The year so that it can be checked if it is a leap year or not.
+     * @param {integer} month The month number starting from 1
+     * @returns integer the number of days in that month
+     */
+    static getNumberOfDaysInMonth(year, month) {
+        if (month >= 0 && month < ethiopian.monthCount - 1) {
+            return 30;
+        }
+        if (month === ethiopian.monthCount - 1) {
+            return DateEthiopian.isEthiopianLeapYear(year) ? 6 : 5
+        }
+        throw new Error("Invalid month provided for month", month)
+    }
+
+    /**
+     * Gets the number of days with in a year.
+     * 
+     * @param {number} year The year to get the number of days to
+     * @returns returns the number of days in the year (365 or 366)
+     */
+    static getNumberOfDaysInYear(year) {
+        return this.isEthiopianLeapYear(year) ? 366 : 365
+    }
+
+
+
     /**
      * 
      * @param {number} year The year to check if leap year is or not
@@ -59,7 +88,7 @@ export class DateEthiopian {
      */
     static isEthiopianLeapYear(year) {
 
-        return (year+1) % 4 === 0
+        return (year + 1) % 4 === 0
     }
 
     /**
@@ -110,7 +139,7 @@ export class DateEthiopian {
 
         //If it reaches here then everything is ok.
         let y = parseInt(_date[0])
-        let m = parseInt(_date[1]) -1
+        let m = parseInt(_date[1]) - 1
         let d = parseInt(_date[2])
         return new DateEthiopian(y, m, d)
     }
@@ -294,6 +323,126 @@ export class DateEthiopian {
         return this.date
     }
 
+    static elapsedDays(month, date) {
+        //We are not considering Puagme because even if the month is 13, we only consider Nehase
+        return month * 30 + date
+    }
+
+    /**
+     * 
+     * @param {number} numberOfDays Number of days should be a negative number, if positive then the days will be added.
+     */
+    subtractDays(numberOfDays) {
+        if (numberOfDays > 0) {
+            return this.addDays(numberOfDays)
+        }
+
+        let tempYear = this.year;
+        let tempMonth = this.month;
+        let tempDate = this.date;
+
+        let daysElapsed = DateEthiopian.elapsedDays(tempMonth, tempDate);
+
+        while (numberOfDays * -1 >= daysElapsed) {
+            tempYear = tempYear - 1
+            tempMonth = ethiopian.monthCount - 1;
+            tempDate = DateEthiopian.getNumberOfDaysInMonth(tempYear, tempMonth)
+            numberOfDays = numberOfDays + daysElapsed
+            daysElapsed = (DateEthiopian.elapsedDays(tempMonth, tempDate))
+        }
+
+        //assume that the original date was on 2016 00 03 and number of days is -3
+        while (numberOfDays * -1 >= tempDate) {
+            tempMonth = tempMonth - 1
+            if (tempMonth < 0) {//because we accept month 0
+                tempMonth = ethiopian.monthCount - 1//because month start with 0
+                tempYear = tempYear - 1
+            }
+            numberOfDays = numberOfDays + tempDate
+            tempDate = DateEthiopian.getNumberOfDaysInMonth(tempYear, tempMonth)
+        }
+
+        if (numberOfDays < 0) {
+            tempDate = tempDate + numberOfDays
+        }
+
+        return new DateEthiopian(tempYear, tempMonth, tempDate);
+    }
+
+    addMonthIgnoringPuagme(numberOfMonths) {
+        let tempYear = this.year
+        let tempMonth = this.month
+        let tempDate = this.date
+
+        //assume iniitally date was on 2016 01 01 and number of month is -2
+        if (numberOfMonths > 0) {
+            while (tempMonth + numberOfMonths >= ethiopian.monthCount - 1) {
+                tempYear = tempYear + 1
+                numberOfMonths = numberOfMonths - (ethiopian.monthCount - 1 - tempMonth)//subtracting -1 because we need to ignore puagme
+                tempMonth = 0
+            }
+            tempMonth = tempMonth + numberOfMonths
+        }
+
+        if (numberOfMonths < 0) {
+            while (tempMonth + numberOfMonths < 0) {
+                tempYear = tempYear - 1
+                numberOfMonths = numberOfMonths + tempMonth + 1//Because we are starting at 0
+                tempMonth = ethiopian.monthCount - 2//We need to ignore puagme
+            }
+            tempMonth = tempMonth + numberOfMonths
+        }
+        return new DateEthiopian(tempYear, tempMonth, tempDate)
+    }
+
+    addDays(numberOfDays) {
+        if (numberOfDays < 0) {
+            this.subtractDays(numberOfDays)
+        }
+        //Check if the number of days makes the whole get into the next year.
+        let tempMonth = this.month;
+        let tempDate = this.date;
+        let tempYear = this.year
+        let daysInYear = DateEthiopian.getNumberOfDaysInYear(tempYear);
+        let remainingDays = daysInYear - DateEthiopian.elapsedDays(tempMonth, tempDate);
+
+        //Now add years if the number of days falls on the following year.
+        while (numberOfDays > remainingDays) {
+            //Here we want to go to the next year, first month and first day
+            tempYear = tempYear + 1
+            tempMonth = 0;
+            tempDate = 1;
+
+            //subtract the number of days remaining
+            numberOfDays = numberOfDays - (remainingDays + 1)//adding 1 because we made date to fall on 1
+            daysInYear = DateEthiopian.getNumberOfDaysInYear(tempYear)
+            remainingDays = daysInYear - DateEthiopian.elapsedDays(tempMonth, tempDate);
+        }
+
+        //now add interms of month if the number of days falls on the next month.
+        remainingDays = DateEthiopian.getNumberOfDaysInMonth(tempYear, tempMonth) - tempDate
+
+        while (numberOfDays > remainingDays) {
+            tempMonth = tempMonth + 1
+            if (tempMonth >= ethiopian.monthCount) {
+                tempMonth = 0;
+                tempYear = tempYear + 1
+            }
+            tempDate = 1;
+
+            numberOfDays = numberOfDays - (remainingDays + 1)//adding 1 because we made date to fall on 1
+            remainingDays = DateEthiopian.getNumberOfDaysInMonth(tempYear, tempMonth) - tempDate;
+        }
+
+        if (numberOfDays > 0) {
+            tempDate = tempDate + numberOfDays
+        }
+
+        return new DateEthiopian(tempYear, tempMonth, tempDate)
+    }
+
+
+
     /**
      * 
      * @returns returns the day of the week result is between 1-7
@@ -320,11 +469,20 @@ export class DateEthiopian {
         return this.month
     }
 
+    addYears(numberOfYears) {
+        let newDate = new DateEthiopian(this.year, this.month, this.date);
+
+        for (let index = 0; index < numberOfYears; index++) {
+            newDate = newDate.addDays(DateEthiopian.getNumberOfDaysInYear(newDate.year))
+        }
+        return newDate;
+    }
+
     /**
      * Returns the iso form of the date.
      * @returns The iso string of the date in the form YYYY-MM-DD
      */
-    toISOString(){
+    toISOString() {
         return `${this.getFullYear().toString()}-${(this.getMonth() + 1)
             .toString()
             .padStart(2, 0)}-${this.getDate().toString().padStart(2, 0)}`

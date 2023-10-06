@@ -14,8 +14,6 @@ import {
 } from '../../components/index.js'
 import {
     FileUpload,
-    Format,
-    formatAdxPdfOptions,
     defaultFormatOption,
     FirstRowIsHeader,
     defaultFirstRowIsHeaderOption,
@@ -126,10 +124,6 @@ const DataImport = () => {
                                         nsSeparator: '>',
                                     }
                                 )}
-                            />
-                            <Format
-                                availableFormats={formatAdxPdfOptions}
-                                type="import"
                             />
                             <FirstRowIsHeader show={values.format == 'csv'} />
                             <Strategy value={values.strategy} />
