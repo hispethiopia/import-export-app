@@ -13,11 +13,9 @@ const { Field } = ReactFinalForm
 
 const rootQuery = {
     roots: {
-        resource: 'organisationUnits',
+        resource: 'me',
         params: {
-            filter: 'level:eq:1',
-            fields: 'id',
-            paging: 'false',
+            fields: 'organisationUnits',
         },
     },
 }
@@ -39,6 +37,7 @@ const Wrapper = ({
     ...rest
 }) => {
     const { loading, data, error } = useDataQuery(rootQuery)
+    const [selectedNames, setSelectedNames]=React.useState({})
 
     return (
         <>
@@ -53,8 +52,20 @@ const Wrapper = ({
             {data && (
                 <div className={styles.wrapper}>
                     <OrganisationUnitTree
-                        onChange={({ selected }) => {
-                            onChange(selected)
+                        onChange={(ev) => {
+                            //This assigns name variable of the last selected orgUnit.
+                            let tempSelectedName={}
+                            selectedNames[ev.path] = ev.displayName
+                            
+                            Object.keys(selectedNames).forEach(key => {
+
+                                if (ev.selected.indexOf(key) >= 0) {
+                                    tempSelectedName[key]=selectedNames[key]
+                                }
+                            })
+                            setSelectedNames(tempSelectedName)
+                            ev.selected.names=tempSelectedName
+                            onChange(ev.selected)
                         }}
                         selected={value}
                         roots={data.roots.organisationUnits.map((ou) => ou.id)}
