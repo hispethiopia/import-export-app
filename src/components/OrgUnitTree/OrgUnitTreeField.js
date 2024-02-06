@@ -15,7 +15,7 @@ const rootQuery = {
     roots: {
         resource: 'me',
         params: {
-            fields: 'organisationUnits',
+            fields: 'dataViewOrganisationUnits',
         },
     },
 }
@@ -68,7 +68,7 @@ const Wrapper = ({
                             onChange(ev.selected)
                         }}
                         selected={value}
-                        roots={data.roots.organisationUnits.map((ou) => ou.id)}
+                        roots={data.roots.dataViewOrganisationUnits.map((ou) => ou.id)}
                         {...rest}
                         singleSelection={!multiSelect}
                     />
